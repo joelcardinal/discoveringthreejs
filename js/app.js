@@ -4,17 +4,7 @@ let camera;
 let renderer;
 let scene;
 let mesh;
-
-function init() {
-
-  // Get a reference to the container element that will hold our scene
-  container = document.querySelector( '#container' );
-
-  // create a Scene
-  scene = new THREE.Scene();
-  // Set the background color
-  scene.background = new THREE.Color( 0x8FBCD4 );
-
+function initCamera(){
   // set up the options for a perspective camera
   const fov = 35; // fov = Field Of View
   const aspect = container.clientWidth / container.clientHeight;
@@ -39,7 +29,18 @@ function init() {
   // every object is initially created at ( 0, 0, 0 )
   // we'll move the camera back a bit so that we can view the scene
   camera.position.set( 0, 0, 10 );
-
+}
+function initLights(){
+  // Create a directional light
+  // By default, this target is at (0, 0, 0)
+  // typically, light intensity (here the second parm) should usually be < than 1 
+  const light = new THREE.DirectionalLight( 0xffffff, 3.0 );
+  // move the light back and up a bit
+  light.position.set( 0, 3, 3 );
+  // remember to add the light to the scene
+  scene.add( light );
+}
+function initMeshes(){
   // create a geometry
   const geometry = new THREE.BoxBufferGeometry( 2, 2, 2 );
 
@@ -75,17 +76,8 @@ function init() {
   mesh = new THREE.Mesh( geometry, material );
   // access the geometry and material at any time using mesh.geometry and mesh.material
   scene.add( mesh );
-
-  // uv_test_bw_1024.png
-
-  // Create a directional light
-  // By default, this target is at (0, 0, 0)
-  const light = new THREE.DirectionalLight( 0xffffff, 3.0 );
-  // move the light back and up a bit
-  light.position.set( 0, 3, 3 );
-  // remember to add the light to the scene
-  scene.add( light );
-
+}
+function initRenderer(){
   // create a WebGLRenderer and set its width and height
   renderer = new THREE.WebGLRenderer( { antialias: true } );
   renderer.setSize( container.clientWidth, container.clientHeight );
@@ -96,7 +88,21 @@ function init() {
   // you don’t have to use the <canvas> element, renderer.domElement, that the renderer automatically creates
   // for simplicity we'll use it here
   container.appendChild( renderer.domElement );
+}
+function init() {
 
+  // Get a reference to the container element that will hold our scene
+  container = document.querySelector( '#container' );
+
+  // create a Scene
+  scene = new THREE.Scene();
+  // Set the background color
+  scene.background = new THREE.Color( 0x8FBCD4 );
+
+  initCamera();
+  initLights();
+  initMeshes();
+  initRenderer();
   play();
 
 }
