@@ -48,18 +48,39 @@ function init() {
   // const material = new THREE.MeshBasicMaterial();
 
   // standard is affected by lights
-  const material = new THREE.MeshStandardMaterial( { color: 0x800080 } );
+  //const material = new THREE.MeshStandardMaterial( { color: 0x800080 } );
   // can later update with material.color.set( '0xff0000' )
   // NOTE: using hex color is same as CSS but in JS you need to prefix 0x instead of #
+
+  // create a texture loader.
+  const textureLoader = new THREE.TextureLoader();
+  // textureLoader.load returns an instance of Texture that we can immediately use in our material, even though the texture itself may take some time to load
+  // loads texture files asynchronously
+  const texture = textureLoader.load( 'imgs/uv_test_bw_1024.png' );
+  // anisotropy, make your textures look good at glancing angles
+  // anisotropic filtering levels are powers of two - 11, 22, 44, 88, up to the maximum level of 1616
+  // high memory usage, use only when needed
+  texture.anisotropy = 16;
+
+  // create a Standard material using the texture we just loaded as a color map,
+  // even though the name is just map it's really a color map,
+  // there are other material properties like normalMap, alphaMap...etc.
+  // NOTE: We’ve also removed the material’s .color parameter,
+  // because the material’s color gets combined (multiplied, technically) with the material’s texture, so if we left it as purple, the texture would have a purple tint
+  const material = new THREE.MeshStandardMaterial( {
+    map: texture,
+  } );
 
   // create a Mesh containing the geometry and material
   mesh = new THREE.Mesh( geometry, material );
   // access the geometry and material at any time using mesh.geometry and mesh.material
   scene.add( mesh );
 
+  // uv_test_bw_1024.png
+
   // Create a directional light
   // By default, this target is at (0, 0, 0)
-  const light = new THREE.DirectionalLight( 0xffffff, 5.0 );
+  const light = new THREE.DirectionalLight( 0xffffff, 3.0 );
   // move the light back and up a bit
   light.position.set( 0, 3, 3 );
   // remember to add the light to the scene
