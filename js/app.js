@@ -1,3 +1,5 @@
+// python -m SimpleHTTPServer 8080
+
 // these need to be accessed inside more than one function so we'll declare them first
 let container;
 let camera;
@@ -6,6 +8,9 @@ let renderer;
 let scene;
 let mesh;
 
+const mixers = [];
+const clock = new THREE.Clock();
+
 function initControls() {
   // remember, this makes the camera orbit the object, not rotate the object
   controls = new THREE.OrbitControls( camera, container );
@@ -13,13 +18,15 @@ function initControls() {
 }
 function initCamera(){
   // set up the options for a perspective camera
-  const fov = 35; // fov = Field Of View
-  const aspect = container.clientWidth / container.clientHeight;
+  //const fov = 35; // fov = Field Of View
+  //const aspect = container.clientWidth / container.clientHeight;
 
-  const near = 0.1;
-  const far = 100;
+  //const near = 0.1;
+  //const far = 100;
   // By convention, one unit on three.js is one meter. Since we’ve set our camera.far value to 100, we now have a scene sized at a scale of about 100 metres
-  camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
+  //camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
+
+  camera = new THREE.PerspectiveCamera( 35, container.clientWidth / container.clientHeight, 1, 1000 );
 
   // Three.js coordinate system
   //      +y
@@ -35,7 +42,7 @@ function initCamera(){
 
   // every object is initially created at ( 0, 0, 0 )
   // we'll move the camera so not looking straight on 0,0,0 origin
-  camera.position.set( -5, 5, 7 );
+  camera.position.set( -50, 50, 150 );
 }
 function initLights(){
   // Create a directional light
@@ -156,6 +163,50 @@ function initMeshes() {
   train.add( chimney );
 
 }
+function loadModels() {
+
+  const loader = new THREE.GLTFLoader();
+
+  // A reusable function to setup the models. We're passing in a position parameter
+  // so that they can be individually placed around the scene
+  const onLoad = ( gltf, position ) => {
+
+    const model = gltf.scene.children[ 0 ];
+    model.position.copy( position );
+
+    const animation = gltf.animations[ 0 ];
+
+    const mixer = new THREE.AnimationMixer( model );
+    mixers.push( mixer );
+
+    const action = mixer.clipAction( animation );
+    action.play();
+
+    scene.add( model );
+
+  };
+
+  // the loader will report the loading progress to this function
+  const onProgress = () => {};
+
+  // the loader will send any error messages to this function, and we'll log
+  // them to to console
+  const onError = ( errorMessage ) => { console.log( errorMessage ); };
+
+  // load the first model. Each model is loaded asynchronously,
+  // so don't make any assumption about which one will finish loading first
+  const parrotPosition = new THREE.Vector3( 0, 0, 50 );
+  loader.load( 'models/Parrot.glb', gltf => onLoad( gltf, parrotPosition ), onProgress, onError );
+
+  // load the second model
+  const flamingoPosition = new THREE.Vector3( 150, 0, -200 );
+  loader.load( 'models/Flamingo.glb', gltf => onLoad( gltf, flamingoPosition ), onProgress, onError );
+
+  // load the third model
+  const storkPosition = new THREE.Vector3( 0, -50, -200 );
+  loader.load( 'models/Stork.glb', gltf => onLoad( gltf, storkPosition ), onProgress, onError );
+
+}
 function initRenderer(){
   // create a WebGLRenderer and set its width and height
   renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -181,7 +232,8 @@ function init() {
   initCamera();
   initControls();
   initLights();
-  initMeshes();
+  loadModels();
+  //initMeshes();
   initRenderer();
   play();
 
@@ -234,6 +286,10 @@ function update() {
   //mesh.rotation.z += 0.01;
   //mesh.rotation.x += 0.01;
   //mesh.rotation.y += 0.01;
+
+  const delta = clock.getDelta();
+
+  mixers.forEach( ( mixer ) => { mixer.update( delta ); } );
 
 }
 
